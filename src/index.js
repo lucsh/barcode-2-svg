@@ -2,6 +2,7 @@
  * Created by d.bilukha on 12.09.2016.
  */
 /*!
+ *  Fork without the fs 
  *  BarCode-2-svg it's BCCL Version 2.0 (jQuery barcode plugin DEMONTE Jean-Baptiste <jbdemonte@gmail.com>)modificated for
  *  work in node server
  *  Original version site: http://barcode-coder.com/
@@ -17,11 +18,9 @@
  *  dual licence :  http://www.cecill.info/licences/Licence_CeCILL_V2-fr.html
  *                  http://www.gnu.org/licenses/gpl.html
  */
-var fs = require('fs');
 var barcode = {
     settings: {
         path: "barcode",
-        toFile:true,
         width:100,
         barWidth: 1,
         barHeight: 50,
@@ -993,10 +992,6 @@ var barcode = {
             height += barcode.intval(settings.marginHRI) + fontSize;
         }
         var svg ='<g>';
-        if(settings.toFile){
-            // svg header
-            svg = '<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 ' + width + ' ' + height + '" >';
-        }
         if(settings.bgColor !== 'transparent'){
             // background
             svg += '<rect width="' + width + '" height="' + height + '" x="0" y="0" fill="' + settings.bgColor + '" />';
@@ -1036,13 +1031,9 @@ var barcode = {
             svg += '</g>';
         }
         // svg footer
-        if(settings.toFile) {
-            svg += '</svg>';
-            return this.write(settings, svg, 'svg', callback);
-        }else{
-            svg += '</g>';
-            return svg;
-        }
+        svg += '</g>';
+        return svg;
+
     },
     // svg 1D barcode renderer
     digitToSvg: function (settings, digit, hri, callback) {
@@ -1055,22 +1046,6 @@ var barcode = {
         var s = barcode.intval(settings.moduleSize);
         return this.digitToSvgRenderer(settings, digit, hri, callback, s, s);
     },
-    write: function (settings, data, type, callback) {
-        fs.writeFile(settings.path + '.' + type, data, null, function (err) {
-            var result = true;
-            if (err) {
-                console.log(err);
-                result = false;
-                return result;
-            }
-            console.log('===svg barcode file create==');
-            if (typeof callback === 'function') {
-                callback(result);
-            }else{
-                return true;
-            }
-        });
-    }
 
 };
 
@@ -1147,9 +1122,7 @@ module.exports = function (datas, type, settings, callback) {
     if (!b2d && settings.addQuietZone) digit = "0000000000" + digit + "0000000000";
 
     var fname = 'digitTo' + settings.output.charAt(0).toUpperCase() + settings.output.substr(1) + (b2d ? '2D' : '');
-    //if (typeof(barcode[fname]) == 'function' && settings.toFile === false) {
-    //    return barcode[fname](settings, digit, hri, callback);
-    //}else
+
     if (typeof(barcode[fname]) == 'function') {
         return barcode[fname](settings, digit, hri, callback);
     }
